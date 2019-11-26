@@ -1,4 +1,4 @@
-`timescale 100ns / 100ns
+`timescale 10ns / 10ns
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -42,8 +42,6 @@ module FIR
 	assign Im = FF_conv[order-1];
 	
 	always @(posedge clock) begin
-		FF_re[0] <= IN;
-	
 		if (reset) begin
 			for (i=0; i < order; i = i+1) begin
 				FF_conv[i] <= 0;
@@ -53,6 +51,8 @@ module FIR
 			end
 		end
 		else begin
+			FF_re[0] <= IN;
+		
 			for (i=1; i < order+1; i = i+1) begin
 				FF_re[i] <= FF_re[i-1];
 			end

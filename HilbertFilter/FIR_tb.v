@@ -1,4 +1,4 @@
-`timescale 100ns / 100ns
+`timescale 10ns / 10ns
 
 ////////////////////////////////////////////////////////////////////////////////
 // Company: IEEE University of Porto Student Branch
@@ -36,7 +36,7 @@ module FIR_tb;
 	wire [11:0] Im;
 
 	// Instantiate the Unit Under Test (UUT)
-	FIR #(12, 11) uut (
+	FIR #(12) uut (
 		.clock(clock), 
 		.IN(IN), 
 		.reset(reset), 
@@ -60,8 +60,10 @@ module FIR_tb;
         
 		// Add stimulus here
 		@(posedge clock);
+		#10
 		reset = 1;
-		@(negedge clock);
+		@(posedge clock);
+		#10
 		reset = 0;
 	end
 	
