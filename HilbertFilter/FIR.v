@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 100ns / 100ns
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -57,14 +57,14 @@ module FIR
 				FF_re[i] <= FF_re[i-1];
 			end
 			
-			FF_conv[0] = -coef1pos;
-			FF_conv[1] = FF_conv[0];
-			FF_conv[2] = FF_conv[1] - coef3pos;
-			FF_conv[3] = FF_conv[2];
-			FF_conv[4] = FF_conv[3] + coef3pos;
-			FF_conv[5] = FF_conv[4];
-			FF_conv[6] = FF_conv[5] + coef1pos;
-			FF_conv[7] = FF_conv[6];
+			FF_conv[0] <= -coef1pos;
+			FF_conv[1] <= FF_conv[0];
+			FF_conv[2] <= FF_conv[1] - coef3pos;
+			FF_conv[3] <= FF_conv[2];
+			FF_conv[4] <= FF_conv[3] + coef3pos;
+			FF_conv[5] <= FF_conv[4];
+			FF_conv[6] <= FF_conv[5] + coef1pos;
+			FF_conv[7] <= FF_conv[6];
 		end
 	end
 
