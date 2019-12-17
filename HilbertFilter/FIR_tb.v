@@ -28,13 +28,13 @@ module FIR_tb;
 
 	// Inputs
 	reg clock;
-	reg [11:0] IN;
+	reg signed [11:0] IN;
 	reg reset;
 	reg EN;
 
 	// Outputs
-	wire [12:0] Re;
-	wire [12:0] Im;
+	wire signed [12:0] Re;
+	wire signed [12:0] Im;
 
 	// Instantiate the Unit Under Test (UUT)
 	FIR uut (
@@ -53,9 +53,9 @@ module FIR_tb;
 	integer               data_file3    ; // file handler
 	integer               scan_file3    ; // file handler
 	real error;
-	reg   [11:0] rxuw;
-	reg   [11:0] realuw;
-	reg   [11:0] imaguw;
+	reg signed  [11:0] rxuw;
+	reg signed  [11:0] realuw;
+	reg signed  [11:0] imaguw;
 	reg	[4:0]	 cnt;
 	`define NULL 0
 	
@@ -78,9 +78,9 @@ module FIR_tb;
 		#50;
 		$display("Starting\n");
 		
-		data_file1 = $fopen("text1.txt", "r");
-		data_file2 = $fopen("text2.txt", "r");
-		data_file3 = $fopen("text3.txt", "r");
+		data_file1 = $fopen("simdata/data_rx1.hex", "r");
+		data_file2 = $fopen("simdata/real_rx1.hex", "r");
+		data_file3 = $fopen("simdata/imag_rx1.hex", "r");
 		if (data_file1 == `NULL) begin
 			$display("data_file handle was NULL");
 			$finish;
@@ -94,9 +94,10 @@ module FIR_tb;
 		#10
 		reset = 0;
 		EN = 1;
-		scan_file1 = $fscanf(data_file1, "%b\n", rxuw);
-		scan_file2 = $fscanf(data_file2, "%b\n", realuw);
-		scan_file3 = $fscanf(data_file3, "%b\n", imaguw);
+		scan_file1 = $fscanf(data_file1, "%x\n", rxuw);
+		scan_file2 = $fscanf(data_file2, "%x\n", realuw);
+		scan_file3 = $fscanf(data_file3, "%x\n", imaguw);
+		IN = rxuw;
 	end
 
 	always @(posedge clock) begin
@@ -106,17 +107,18 @@ module FIR_tb;
 			end
 			else begin
 				cnt <= cadence;
-			
-				scan_file1 = $fscanf(data_file1, "%b\n", rxuw);
-				scan_file2 = $fscanf(data_file2, "%b\n", realuw);
-				scan_file3 = $fscanf(data_file3, "%b\n", imaguw);
-				IN = rxuw;
 
 				if (!$feof(data_file1)) begin
-					$display("[file]->%x,%x,%x", rxuw, {realuw[11], realuw}, {imaguw[11], imaguw});
+					
+					$display("[file]->%d; %d; %d", rxuw, $signed({realuw[11], realuw}), $signed({imaguw[11], imaguw}));
 					#1
-					error = 100 * ( {imaguw[11], imaguw} - Im ) / Im;
-					$display("[firm]->%x,%x,%x --> delta: %f%%\n", IN, Re, Im, error);
+					error = 100 * ( $signed({imaguw[11], imaguw}) - Im ) / Im;
+					$display("[firm]->%d; %d; %d --> delta: %f%%\n", IN, Re, Im, error);
+					
+					scan_file1 <= $fscanf(data_file1, "%x\n", rxuw);
+					scan_file2 <= $fscanf(data_file2, "%x\n", realuw);
+					scan_file3 <= $fscanf(data_file3, "%x\n", imaguw);
+					IN <= rxuw;
 				end
 				else begin
 					$finish;

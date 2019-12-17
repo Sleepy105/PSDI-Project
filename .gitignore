@@ -1,3 +1,6 @@
+HilbertFilter/simdata
+HilbertFilter/matlab
+
 # intermediate build files
 *.bgn
 *.bit
