@@ -1,5 +1,5 @@
-HilbertFilter/simdata
-HilbertFilter/matlab
+simdata
+matlab
 
 # intermediate build files
 *.bgn

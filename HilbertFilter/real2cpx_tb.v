@@ -22,7 +22,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
-module FIR_tb;
+module real2cpx_tb;
 
 	parameter CLOCK_PERIOD = 10; // ns
 
@@ -37,7 +37,7 @@ module FIR_tb;
 	wire signed [12:0] Im;
 
 	// Instantiate the Unit Under Test (UUT)
-	FIR uut (
+	real2cpx uut (
 		.clock(clock), 
 		.IN(IN),
 		.EN(EN),
@@ -54,8 +54,8 @@ module FIR_tb;
 	integer               scan_file3    ; // file handler
 	real error;
 	reg signed  [11:0] rxuw;
-	reg signed  [11:0] realuw;
-	reg signed  [11:0] imaguw;
+	reg signed  [12:0] realuw;
+	reg signed  [12:0] imaguw;
 	reg	[4:0]	 cnt;
 	`define NULL 0
 	
@@ -78,9 +78,9 @@ module FIR_tb;
 		#50;
 		$display("Starting\n");
 		
-		data_file1 = $fopen("simdata/data_rx1.hex", "r");
-		data_file2 = $fopen("simdata/real_rx1.hex", "r");
-		data_file3 = $fopen("simdata/imag_rx1.hex", "r");
+		data_file1 = $fopen("../simdata/data_rx1.hex", "r");
+		data_file2 = $fopen("../simdata/real_rx1.hex", "r");
+		data_file3 = $fopen("../simdata/imag_rx1.hex", "r");
 		if (data_file1 == `NULL) begin
 			$display("data_file handle was NULL");
 			$finish;
@@ -95,8 +95,6 @@ module FIR_tb;
 		reset = 0;
 		EN = 1;
 		scan_file1 = $fscanf(data_file1, "%x\n", rxuw);
-		scan_file2 = $fscanf(data_file2, "%x\n", realuw);
-		scan_file3 = $fscanf(data_file3, "%x\n", imaguw);
 		IN = rxuw;
 	end
 
@@ -110,14 +108,15 @@ module FIR_tb;
 
 				if (!$feof(data_file1)) begin
 					
-					$display("[file]->%d; %d; %d", rxuw, $signed({realuw[11], realuw}), $signed({imaguw[11], imaguw}));
+					scan_file2 <= $fscanf(data_file2, "%x\n", realuw);
+					scan_file3 <= $fscanf(data_file3, "%x\n", imaguw);
+					
+					$display("[file]->%d; %d; %d", rxuw, realuw, imaguw);
 					#1
-					error = 100 * ( $signed({imaguw[11], imaguw}) - Im ) / Im;
+					error = 100 * ( $itor(imaguw) - $itor(Im) ) / $itor(Im);
 					$display("[firm]->%d; %d; %d --> delta: %f%%\n", IN, Re, Im, error);
 					
 					scan_file1 <= $fscanf(data_file1, "%x\n", rxuw);
-					scan_file2 <= $fscanf(data_file2, "%x\n", realuw);
-					scan_file3 <= $fscanf(data_file3, "%x\n", imaguw);
 					IN <= rxuw;
 				end
 				else begin
