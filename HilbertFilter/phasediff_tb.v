@@ -26,6 +26,7 @@ module phasediff_tb;
 
 	// Test Files
 	parameter
+	CLOCK_PERIOD = 10, // 10ns
 	MAXSIMDATA = 8000,
 	filename_phasediff_A = "../simdata/phase_rx1.hex",
 	filename_phasediff_B = "../simdata/phase_rx3.hex",
@@ -35,12 +36,18 @@ module phasediff_tb;
 	// Inputs
 	reg signed [18:0] A;
 	reg signed [18:0] B;
+	reg clock;
+	reg reset;
+	reg sample;
 
 	// Outputs
 	wire [18:0] out;
 
 	// Instantiate the Unit Under Test (UUT)
 	phasediff uut (
+		.clock(clock),
+		.reset(reset),
+		.sample(sample),
 		.A(A), 
 		.B(B), 
 		.out(out)
@@ -54,14 +61,32 @@ module phasediff_tb;
 		e_cnt = 0;
 	real error = 0;
 	parameter frac_divider = (1<<10);
-
+	
+	
+	initial begin
+		// Generate the clock signal:
+		forever #(CLOCK_PERIOD) clock = ~clock;
+	end
+	
+	
 	initial begin
 		// Initialize Inputs
+		clock = 0;
+		reset = 0;
+		sample = 0;
 		A = 0;
 		B = 0;
 
 		// Wait 100 ns for global reset to finish
 		#100;
+		
+		@(posedge clock);
+		#10
+		reset = 1;
+		@(posedge clock);
+		#10
+		reset = 0;
+		sample = 1;
         
 		// Read test values from files
 		$readmemh( filename_phasediff_A, testA );
@@ -72,6 +97,8 @@ module phasediff_tb;
 			A = testA[i];
 			B = testB[i];
 			#10;
+			@(posedge clock);
+			#10
 			error = 100 * ( $itor(testOut[i]) - $itor(out) ) / $itor(out);
 			if (error > 1) begin
 				e_cnt = e_cnt +1;

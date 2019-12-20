@@ -19,15 +19,35 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module phasediff (
+	 input clock,
+	 input reset,
+	 input sample,
     input signed [18:0] A,
     input signed [18:0] B,
-    output reg signed [18:0] out
+    output reg signed [18:0] out,
+	 output ready
     );
-	
-	wire signed [18:0] diff = $signed(A) - $signed(B);
-	
+
+	assign ready = reset ? 1'b0 : sample;
+
+	reg signed [18:0] FF_A;
+	reg signed [18:0] FF_B;
+
+	wire signed [18:0] diff = $signed(FF_A) - $signed(FF_B);
+
 	parameter signed threashold = $signed({9'd180,10'd0});
 	parameter signed adjustment = $signed({9'd360,10'd0});
+	
+	always @(posedge clock) begin
+		if (reset) begin
+			FF_A <= 0;
+			FF_B <= 0;
+		end
+		else if (sample) begin
+			FF_A <= A;
+			FF_B <= B;
+		end
+	end
 	
 	always @* begin
 		if ( diff > threashold ) begin
