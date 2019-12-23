@@ -22,9 +22,9 @@ module phasediff (
 	 input clock,
 	 input reset,
 	 input sample,
-    input signed [18:0] A,
-    input signed [18:0] B,
-    output reg signed [18:0] out,
+    input signed [18:0] A,				// 9Q10
+    input signed [18:0] B,				// 9Q10
+    output reg signed [18:0] out,	// 9Q10
 	 output ready
     );
 
