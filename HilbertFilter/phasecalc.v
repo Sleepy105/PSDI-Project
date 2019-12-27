@@ -23,9 +23,9 @@ module phasecalc (
     input reset,
     input start,
     output busy,
-    input [12:0] x,
-    input [12:0] y,
-    output [18:0] angle
+    input signed [12:0] x,
+    input signed [12:0] y,
+    output signed [18:0] angle
     );
 
 parameter ROMSIZE = 16;
@@ -38,12 +38,12 @@ wire signed [OUTSIZE-1:0] angle_2q;
 reg signed [OUTSIZE-1:0] angle_correction;
 reg sign;
 
-always @(posedge clock) begin
-	if (start) begin
+always @(posedge start) begin
+	//if (start) begin
 		x_2q <= (x>=0) ? x : -x;
 		sign <= (x>=0) ? 1'b1 : 1'b0;
 		angle_correction <= $signed( {((y>=0) ? 9'd180 : -(9'd180) ), 10'd0} );
-	end
+	//end
 end
 
 assign angle = sign ? angle_2q : angle_correction - angle_2q;

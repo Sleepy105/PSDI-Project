@@ -47,7 +47,7 @@ module phase2speed_tb;
 	wire ready;
 
 	// Instantiate the Unit Under Test (UUT)
-	phase2speed #(.N(11)) uut (
+	phase2speed #(.N(1)) uut (
 		.clock(clock), 
 		.reset(reset), 
 		.sample(sample), 

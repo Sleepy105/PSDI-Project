@@ -31,10 +31,11 @@ module phase2speed #(parameter N = 6) (
 	reg [N+1:0] cnt;
 	reg signed [18:0] avg;	// 9Q10
 	
-	wire [33:0] mult_buffer = (avg * scale_factor) >>> 12;
-	
 	parameter start_cnt = 2**N;
 	parameter signed scale_factor = 15'd20450; // divided by 2^5 / 2^12
+	
+	wire [43:0] mult_buffer = ($signed({avg[18], avg[18], avg, 1'b0}) * $signed({1'b0, scale_factor, 11'b0}));
+	wire [19:0] idk = mult_buffer[];
 
 	always @(posedge clock) begin
 		if (reset) begin
@@ -59,8 +60,8 @@ module phase2speed #(parameter N = 6) (
 	end
 	
 	always @* begin
-		speed = mult_buffer;
-		$display("%x", mult_buffer);
+		speed = mult_buffer[25:11];
+		$display("%x", speed);
 	end
 
 

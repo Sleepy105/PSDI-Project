@@ -38,7 +38,7 @@ module ATAN_ROM #(parameter ROMSIZE = 32, parameter counter_bit_size = 6, parame
 				 output [out_size-1:0] data
 			   );
 		
-parameter ATANLUT_FILENAME = "../../simdata/atanLUTd.hex";	
+parameter ATANLUT_FILENAME = "../simdata/atanLUTd.hex";	
 
 reg [out_size-1:0] atanLUT[ 0 : ROMSIZE-1 ];	
 initial
