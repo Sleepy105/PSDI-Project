@@ -108,7 +108,7 @@ module phasecalc_tb;
 				@(posedge clock);
 			end
 
-			error = 100 * ($itor(abs_out(testAngle[i]))/(2**10) - ($itor(abs_out(angle))/(2**10)) ) / ($itor(abs_out(angle))/(2**10)) ;
+			error = ($itor(testAngle[i])/(2**10)) - ($itor(angle)/(2**10));
 			if (error > 1 || error < -1) begin
 				e_cnt = e_cnt +1;
 				$display("%f & %f --> %f <> %f (error: %f%%)", X, Y, $itor(angle)/(2**10), $itor(testAngle[i])/(2**10), error);

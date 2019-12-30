@@ -35,7 +35,7 @@ module phase2speed #(parameter N = 6) (
 	parameter signed scale_factor = 15'd20450; // divided by 2^5 / 2^12
 	
 	wire [43:0] mult_buffer = ($signed({avg[18], avg[18], avg, 1'b0}) * $signed({1'b0, scale_factor, 11'b0}));
-	wire [19:0] idk = mult_buffer[];
+	wire [19:0] idk = mult_buffer[0]; //TODO
 
 	always @(posedge clock) begin
 		if (reset) begin
