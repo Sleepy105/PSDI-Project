@@ -100,7 +100,7 @@ module phasediff_tb;
 			@(posedge clock);
 			#10
 			error = 100 * ( $itor(testOut[i]) - $itor(out) ) / $itor(out);
-			if (error > 1) begin
+			if (error > 0.05 || error < -0.05) begin
 				e_cnt = e_cnt +1;
 				$display("%f - %f = %f <--> %f (error: %f%%)", $itor(A)/(2**10), $itor(B)/(2**10), $itor(out)/(2**10), $itor(testOut[i])/(2**10), error);
 			end

@@ -47,7 +47,7 @@ module phase2speed_tb;
 	wire ready;
 
 	// Instantiate the Unit Under Test (UUT)
-	phase2speed #(.N(1)) uut (
+	phase2speed #(.N(6)) uut (
 		.clock(clock), 
 		.reset(reset), 
 		.sample(sample), 
@@ -92,6 +92,7 @@ module phase2speed_tb;
 			scan_file_out <= $fscanf(data_file_out, "%x\n", gt);
 			error <= 100 * ( ($itor(speed)/(2**10)) - ($itor(gt)/(2**10)) ) / ($itor(gt)/(2**10));
 			$display("%f <--> %f (error: %f%%)", $itor(speed)/(2**10), $itor(gt)/(2**10), error);
+			$display("%x", speed);
 		end
 	end
       

@@ -53,6 +53,7 @@ module real2cpx_tb;
 	integer               data_file3    ; // file handler
 	integer               scan_file3    ; // file handler
 	real error;
+	integer e_cnt;
 	reg signed  [11:0] rxuw;
 	reg signed  [12:0] realuw;
 	reg signed  [12:0] imaguw;
@@ -73,6 +74,7 @@ module real2cpx_tb;
 		reset = 0;
 		EN = 0;
 		cnt = cadence;
+		e_cnt = 0;
 
 		// Wait 100 ns for global reset to finish
 		#50;
@@ -94,7 +96,14 @@ module real2cpx_tb;
 		#10
 		reset = 0;
 		EN = 1;
-		scan_file1 = $fscanf(data_file1, "%x\n", rxuw);
+		repeat(9) begin
+			scan_file1 = $fscanf(data_file1, "%x\n", rxuw);
+		end
+		repeat(8) begin
+			scan_file2 = $fscanf(data_file2, "%x\n", realuw);
+			scan_file3 = $fscanf(data_file3, "%x\n", imaguw);
+		end
+		
 		IN = rxuw;
 	end
 
@@ -111,15 +120,20 @@ module real2cpx_tb;
 					scan_file2 <= $fscanf(data_file2, "%x\n", realuw);
 					scan_file3 <= $fscanf(data_file3, "%x\n", imaguw);
 					
-					$display("[file]->%d; %d; %d", rxuw, realuw, imaguw);
+					//$display("[file]->%d; %d; %d", rxuw, realuw, imaguw);
 					#1
 					error = 100 * ( $itor(imaguw) - $itor(Im) ) / $itor(Im);
-					$display("[firm]->%d; %d; %d --> delta: %f%%\n", IN, Re, Im, error);
+					if (error > 0.8 || error < -0.8) begin
+						e_cnt = e_cnt+1;
+						//$display("[firm]->%d; %d; %d --> delta: %f%%\n", IN, Re, Im, error);
+					end
 					
 					scan_file1 <= $fscanf(data_file1, "%x\n", rxuw);
 					IN <= rxuw;
 				end
 				else begin
+					$display("\n\n--> %d ERRORS found!!!", e_cnt);
+				
 					$finish;
 				end
 			end

@@ -109,7 +109,7 @@ module phasecalc_tb;
 			end
 
 			error = ($itor(testAngle[i])/(2**10)) - ($itor(angle)/(2**10));
-			if (error > 1 || error < -1) begin
+			if (error > 0.05 || error < -0.05) begin
 				e_cnt = e_cnt +1;
 				$display("%f & %f --> %f <> %f (error: %f%%)", X, Y, $itor(angle)/(2**10), $itor(testAngle[i])/(2**10), error);
 			end
