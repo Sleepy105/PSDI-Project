@@ -22,75 +22,63 @@ module interpol #(parameter N=16, parameter M=16) (
     input clock,
 	 input start,
     input reset,
-    output ready,
-	 input [N-1:0] X,
-    output [M-1:0] Y
+    output reg ready,
+	 input signed [N-1:0] X,
+    output reg signed [M-1:0] Y
     );
 
-// The lookup table, 16 locations, X and Y pairs: 
-reg [ N + M - 1 : 0 ] LUTcalib[15:0];
+	// The lookup table, 16 locations, X and Y pairs: 
+	reg [ N + M - 1 : 0 ] LUTcalib [15:0];
 
-//reg delta [N-1:0];
-reg [4:0] ll;
-reg [4:0] ul;
-reg [4:0] i;
-reg [4:0] sel;
-reg [M -1 : 0] out;
+	reg signed  [N-1:0] xbuff;
+	reg signed [M-1:0] ybuff;
+	reg [3:0] cnt;
+	reg state;
+	wire sign;
+	assign sign = (xbuff < 0);
 
-assign Y = out;
-
-// Load initial contents to the LUT from file datafile.hex: 
-initial 
-begin   
-	$readmemh( "../simdata/atanLUT.hex", LUTcalib ); 
-	ll = 0;
-	ul = N;
-	i = N;
-	sel = N/2;
-end 
- 
-always @(posedge clock) begin
-	for (i = N; i > 0; i = i >> 1) begin
-		if (X > LUTcalib[sel][N+M-1:M]) begin
-			//greater
-			if (!i) begin
-				out <= (LUTcalib[sel][M-1:0] + LUTcalib[sel+1][M-1:0]) >> 1;
-			end
-			else begin	
-				ll <= sel;
-				sel <= sel+(ul-sel)/2;
-			end
-		end
-		
-		else if (X < LUTcalib[sel][N+M-1:M])begin
-			//lower
-			if (!i) begin
-				out <= (LUTcalib[sel][M-1:0] + LUTcalib[sel-1][M-1:0]) >> 1;
-			end
-			else begin
-				sel <= sel-(sel-ll)/2;
-				ul <= sel;
-			end
-		end
-		
-		else begin
-			if (!i) begin
-				out <= LUTcalib[sel][M-1:0];
-			end
-			i = 0;
-		end		
-	end
-
-
-	if (X > LUTcalib[sel][N+M-1:M]) begin
-		out <= (LUTcalib[sel][M-1:0] + LUTcalib[sel+1][M-1:0]) >> 1;
-	end
-	else if (X < LUTcalib[sel][N+M-1:M]) begin
-		out <= (LUTcalib[sel][M-1:0] + LUTcalib[sel-1][M-1:0]) >> 1;
-	end
-	else begin
-		out <= LUTcalib[sel][M-1:0];
+	// Load initial contents to the LUT from file 'datafile.hex':
+	initial begin
+		$readmemh( "../simdata/datafile.hex", LUTcalib ); 
 	end
 	
-end
+	// FSM states:
+	parameter ST_IDLE = 1'b0,
+				 ST_RUN  = 1'b1;
+	 
+	always @(posedge clock) begin
+		
+		if (reset) begin
+			// reset values on all registers
+			cnt <= 0;
+			xbuff <= 0;
+			ybuff <= 0;
+		end
+		else begin
+			// Normal calculation process
+			case ( state )
+				ST_IDLE:
+					if (start) begin
+						state <= ST_RUN;
+						ready <= 0;
+						xbuff <= X;
+					end
+				ST_RUN: begin
+					xbuff <= sign ? (xbuff + LUTcalib[cnt][N+M-1:M]) : (xbuff - LUTcalib[cnt][N+M-1:M]);
+					ybuff <= sign ? (ybuff - LUTcalib[cnt][N-1:0]) : (ybuff + LUTcalib[cnt][N-1:0]);
+					// operations are in reverse
+
+					if ( cnt == 15 ) begin
+						cnt <= 1'b0;
+						Y <= ybuff;
+						ready <= 1;
+						state <= ST_IDLE;
+					end
+					else begin
+						cnt <= cnt + 1;
+					end
+				end
+			endcase
+		end
+	end
 endmodule
