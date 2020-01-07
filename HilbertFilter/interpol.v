@@ -39,7 +39,7 @@ module interpol #(parameter N=16, parameter M=16) (
 
 	// Load initial contents to the LUT from file 'datafile.hex':
 	initial begin
-		$readmemh( "../simdata/datafile.hex", LUTcalib ); 
+		$readmemh( "../simdata/LUTdatafile.hex", LUTcalib ); 
 	end
 	
 	// FSM states:
