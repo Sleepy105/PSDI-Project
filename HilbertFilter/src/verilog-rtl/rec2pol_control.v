@@ -57,7 +57,7 @@ begin
 				 state <= ST_IDLE;
 			   end
 			   else
-			     counter <= counter + 1; 
+			     counter <= counter + 2'b01; 
 	endcase
 
 end

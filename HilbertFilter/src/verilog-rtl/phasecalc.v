@@ -29,7 +29,7 @@ module phasecalc (
     );
 
 parameter ROMSIZE = 16;
-parameter COUNTERSIZE = 5;
+parameter COUNTERSIZE = 4;
 parameter INSIZE = 13;
 parameter OUTSIZE = 19;
 
