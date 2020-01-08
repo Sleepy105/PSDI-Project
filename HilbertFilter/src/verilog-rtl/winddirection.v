@@ -33,10 +33,34 @@ module winddirection
 			   );
 
 
-// assign outputs to constant values:
-assign speedX = 10 << 10;
-assign speedY = 10 << 10;
-assign speeden = 0;
+assign speeden = wind_1_ready && wind_2_ready;
+
+wire wind_1_ready;
+wire wind_2_ready;
+
+wind wind_1 (
+	 .clock(clock),
+    .reset(reset),
+	 .enable(1'b1),
+	 .sample(endata),
+    .rxA(rx1),
+    .rxB(rx3),
+	 .meanlen(spdmeanlen),
+    .speed(speedY),
+	 .ready(wind_1_ready)
+);
+
+wind wind_2 (
+	 .clock(clock),
+    .reset(reset),
+	 .enable(1'b1),
+	 .sample(endata),
+    .rxA(rx2),
+    .rxB(rx4),
+	 .meanlen(spdmeanlen),
+    .speed(speedX),
+	 .ready(wind_2_ready)
+);
 
 endmodule
 

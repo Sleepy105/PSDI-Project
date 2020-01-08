@@ -220,22 +220,25 @@ winddirection  winddirection_1
 				  .rx3( rx3 ),
 				  .rx4( rx4 ),
 				  .spdmeanlen( spdmeanlen ),  // The length of the speed averaging filter
-				  .speedX(  ),   // wind speed along X, 16 bits, 10 fractional
-				  .speedY(  ),   // wind speed along Y, 16 bits, 10 fractional
-				  .speeden(   )        // 1-clock pulse to sync with speedX/Y updates
+				  .speedX(speedX),   // wind speed along X, 16 bits, 10 fractional
+				  .speedY(speedY),   // wind speed along Y, 16 bits, 10 fractional
+				  .speeden(speeden)        // 1-clock pulse to sync with speedX/Y updates
 			   );
 				
 // Final modules should receive speedX and speedY and
 // generate the signals windspeed and windangle:
 wire [15:0] windspeed, windangle;
 
-
-
-// For now assign these signals directly to output ports:
-assign windspeed = P2out << 7;
-assign windangle = P3out << 7;
-assign speedX    = P4out << 10;
-assign speedY    = P5out << 10;
+windrec2pol windrec2pol_1 (
+	.clock(clock100M),
+   .reset(reset),
+   .start(speeden),
+   .speedX(speedX),
+   .speedY(speedY),
+	.busy(),
+   .mod(windspeed),
+   .angle(windangle)
+);
 
 	
 // Enable signal generation:
