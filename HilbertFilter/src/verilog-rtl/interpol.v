@@ -18,7 +18,7 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module interpol #(parameter N=16, parameter M=16) (
+module interpol #(parameter LUTSIZE = 16, parameter COUNTERBITS = 5, parameter N=16, parameter QN=10, parameter M=16, parameter QM=10) (
     input clock,
 	 input start,
     input reset,
@@ -28,56 +28,75 @@ module interpol #(parameter N=16, parameter M=16) (
     );
 
 	// The lookup table, 16 locations, X and Y pairs: 
-	reg [ N + M - 1 : 0 ] LUTcalib [15:0];
+	reg signed [ N + M - 1 : 0 ] LUT [LUTSIZE-1:0];
+	reg [COUNTERBITS-1:0] i;
 
 	reg signed  [N-1:0] xbuff;
-	reg signed [M-1:0] ybuff;
-	reg [3:0] cnt;
-	reg state;
-	wire sign;
-	assign sign = (xbuff < 0);
+	reg signed [15:0] m;
+	reg signed [15:0] b;
 
 	// Load initial contents to the LUT from file 'datafile.hex':
 	initial begin
-		$readmemh( "../simdata/LUTdatafile.hex", LUTcalib ); 
+		$readmemh( "../simdata/LUTdatafile.hex", LUT ); 
 	end
 	
 	// FSM states:
-	parameter ST_IDLE = 1'b0,
-				 ST_RUN  = 1'b1;
+	reg [2:0] state;
+	parameter ST_IDLE 	= 3'b000,
+				 ST_SEARCH	= 3'b001,
+				 ST_CALCM	= 3'b010,
+				 ST_CALCB	= 3'b011,
+				 ST_CALCY	= 3'b100;
 	 
 	always @(posedge clock) begin
 		
 		if (reset) begin
 			// reset values on all registers
-			cnt <= 0;
+			state <= ST_IDLE;
 			xbuff <= 0;
-			ybuff <= 0;
+			m <= 0;
+			b <= 0;
+			i <= 0;
+			ready <= 1;
 		end
 		else begin
 			// Normal calculation process
 			case ( state )
 				ST_IDLE:
 					if (start) begin
-						state <= ST_RUN;
+						state <= ST_SEARCH;
 						ready <= 0;
+						m <= 0;
+						b <= 0;
+						i <= 0;
 						xbuff <= X;
 					end
-				ST_RUN: begin
-					xbuff <= sign ? (xbuff + LUTcalib[cnt][N+M-1:M]) : (xbuff - LUTcalib[cnt][N+M-1:M]);
-					ybuff <= sign ? (ybuff - LUTcalib[cnt][N-1:0]) : (ybuff + LUTcalib[cnt][N-1:0]);
-					// operations are in reverse
-
-					if ( cnt == 15 ) begin
-						cnt <= 1'b0;
-						Y <= ybuff;
+				ST_SEARCH: begin
+						if (xbuff < $signed(LUT[i][N+M-1:M])) begin
+							state <= ST_CALCM;
+							i <= i ? i : 2'b01;
+						end
+						else if (i < LUTSIZE) begin
+							i <= i + 2'b01;
+						end
+						else begin
+							state <= ST_CALCM;
+							i <= i ? i : 2'b01;
+						end
+					end
+				ST_CALCM: begin
+						m <= ( ($signed($signed(LUT[i][N-1:0])) - $signed(LUT[i-1][N-1:0])) / ($signed($signed(LUT[i][N+M-1:M]) - $signed(LUT[i-1][N+M-1:M])) >>> 7) );
+						state <= ST_CALCB;
+					end
+				ST_CALCB: begin
+						b <= $signed(LUT[i][N-1:0]) - ($signed(m*$signed(LUT[i][N+M-1:M]))>>>7);
+						state <= ST_CALCY;
+					end
+				ST_CALCY: begin
+						Y <= ((m*xbuff) >>> QN) + b;
 						ready <= 1;
 						state <= ST_IDLE;
 					end
-					else begin
-						cnt <= cnt + 1;
-					end
-				end
 			endcase
 		end
 	end
