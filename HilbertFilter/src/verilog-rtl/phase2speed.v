@@ -32,7 +32,7 @@ module phase2speed (
 	reg [10:0] cnt;
 	reg signed [18:0] avg;	// 9Q10
 	
-	wire [10:0] start_cnt = 2**meanlen + 1;
+	wire [10:0] start_cnt = 2**meanlen-1;
 	parameter signed scale_factor = 15'd20450; // divided by 2^5 / 2^12
 	
 	wire [29:0] bigavg = sum >> meanlen;
@@ -46,17 +46,20 @@ module phase2speed (
 			cnt <= start_cnt;
 			avg <= 0;
 		end
+		else if (ready && sample) begin
+			cnt <= start_cnt;
+			sum <= sum + phase;
+			ready <= 0;
+		end
 		else if (sample) begin
 			if (cnt) begin
 				cnt <= cnt - 1'd1;
 				sum <= sum + phase;
-				ready <= 0;
 			end
 			else begin
 				avg <= bigavg[18:0];
 				sum <= 0;
 				ready <= 1;
-				cnt <= start_cnt;
 			end
 		end
 	end

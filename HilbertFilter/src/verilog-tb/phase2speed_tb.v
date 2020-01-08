@@ -67,12 +67,14 @@ module phase2speed_tb;
 	initial begin
 		// Initialize Inputs
 		clock = 0;
+		start = 0;
 		reset = 0;
 		sample = 0;
 		phase = 0;
 		$readmemh(filename_params, meanlen);
 		data_file_in = $fopen(filename_in, "r");
 		data_file_out = $fopen(filename_out, "r");
+		scan_file_in <= $fscanf(data_file_in, "%x\n", phase);
 
 		// Wait 100 ns for global reset to finish
 		#100;
@@ -84,18 +86,32 @@ module phase2speed_tb;
 		@(posedge clock);
 		#10
 		reset = 0;
+		start = 1;
 	end
 	
+	reg start;
+	reg [2:0] doit = 3'd4;
+	
 	always @(posedge clock) begin
-		scan_file_in <= $fscanf(data_file_in, "%x\n", phase);
-		sample <= 1;
-		if ($feof(data_file_in)) begin
-			$finish;
-		end
-		if (ready) begin
-			scan_file_out <= $fscanf(data_file_out, "%x\n", gt);
-			error = 100 * ( ($itor(speed)/(2**10)) - ($itor(gt)/(2**10)) ) / ($itor(gt)/(2**10));
-			$display("%f <--> %f (error: %f%%)", $itor(speed)/(2**10), $itor(gt)/(2**10), error);
+		if (start) begin
+			if (doit) begin
+				doit = doit -1;
+				sample <= 0;
+			end
+			else begin
+				doit <= 3'd4;
+				sample <= 1;
+				if ($feof(data_file_in)) begin
+					$finish;
+				end
+				if (ready) begin
+					scan_file_out <= $fscanf(data_file_out, "%x\n", gt);
+					error = 100 * ( ($itor(speed)/(2**10)) - ($itor(gt)/(2**10)) ) / ($itor(gt)/(2**10));
+					$display("%f <--> %f (error: %f%%)", $itor(speed)/(2**10), $itor(gt)/(2**10), error);
+				end
+				else
+					scan_file_in <= $fscanf(data_file_in, "%x\n", phase);
+			end
 		end
 	end
       
