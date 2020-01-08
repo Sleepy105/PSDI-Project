@@ -18,21 +18,24 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module phase2speed #(parameter N = 6) (
+module phase2speed (
 	 input clock,
 	 input reset,
 	 input sample,
+	 input [3:0] meanlen,
     input signed [18:0] phase,		// 9Q10
     output reg signed [15:0] speed,	// 6Q10
 	 output reg ready
     );
 
-	reg signed [18+N:0] sum; // (9+N)Q10
-	reg [N+1:0] cnt;
+	reg signed [29:0] sum; // (9+N)Q10
+	reg [10:0] cnt;
 	reg signed [18:0] avg;	// 9Q10
 	
-	parameter start_cnt = 2**N;
+	wire [10:0] start_cnt = 2**meanlen + 1;
 	parameter signed scale_factor = 15'd20450; // divided by 2^5 / 2^12
+	
+	wire [29:0] bigavg = sum >> meanlen;
 	
 	wire [43:0] mult_buffer = ($signed({avg[18], avg[18], avg, 1'b0}) * $signed({1'b0, scale_factor, 6'b0}));
 
@@ -50,7 +53,7 @@ module phase2speed #(parameter N = 6) (
 				ready <= 0;
 			end
 			else begin
-				avg <= sum[18+N:N];
+				avg <= bigavg[18:0];
 				sum <= 0;
 				ready <= 1;
 				cnt <= start_cnt;
