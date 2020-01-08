@@ -28,9 +28,10 @@ module phase2speed_tb;
 	parameter
 	CLOCK_PERIOD = 10, // 10ns
 	filename_in = "../simdata/phasediff_Y.hex",
-	filename_out = "../simdata/speed_Y.hex";
-	integer data_file_in;	// file handler
-	integer scan_file_in;	// file handler
+	filename_out = "../simdata/speed_Y.hex",
+	filename_params = "../simdata/params.hex";
+	integer data_file_in;   // file handler
+	integer scan_file_in;   // file handler
 	integer data_file_out;	// file handler
 	integer scan_file_out;	// file handler
 	reg signed [15:0] gt; // ground truth
@@ -41,16 +42,18 @@ module phase2speed_tb;
 	reg reset;
 	reg sample;
 	reg signed [18:0] phase;
+	reg [3:0] meanlen [0:0];
 
 	// Outputs
 	wire signed [15:0] speed;
 	wire ready;
 
 	// Instantiate the Unit Under Test (UUT)
-	phase2speed #(.N(6)) uut (
+	phase2speed uut (
 		.clock(clock), 
 		.reset(reset), 
-		.sample(sample), 
+		.sample(sample),
+		.meanlen(meanlen[0]),
 		.phase(phase), 
 		.speed(speed), 
 		.ready(ready)
@@ -67,6 +70,7 @@ module phase2speed_tb;
 		reset = 0;
 		sample = 0;
 		phase = 0;
+		$readmemh(filename_params, meanlen);
 		data_file_in = $fopen(filename_in, "r");
 		data_file_out = $fopen(filename_out, "r");
 
@@ -90,9 +94,8 @@ module phase2speed_tb;
 		end
 		if (ready) begin
 			scan_file_out <= $fscanf(data_file_out, "%x\n", gt);
-			error <= 100 * ( ($itor(speed)/(2**10)) - ($itor(gt)/(2**10)) ) / ($itor(gt)/(2**10));
+			error = 100 * ( ($itor(speed)/(2**10)) - ($itor(gt)/(2**10)) ) / ($itor(gt)/(2**10));
 			$display("%f <--> %f (error: %f%%)", $itor(speed)/(2**10), $itor(gt)/(2**10), error);
-			$display("%x", speed);
 		end
 	end
       
