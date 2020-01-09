@@ -210,7 +210,7 @@ wire speeden;
 wire [3:0] spdmeanlen; // This is the log2( the_length_of_averaging_filter )
 
 // Instantiate the main datapath
-winddirection  winddirection_1 
+winddirectionXY  winddirection_1 
                (
               .clock( clock ),
 				  .reset( reset ),

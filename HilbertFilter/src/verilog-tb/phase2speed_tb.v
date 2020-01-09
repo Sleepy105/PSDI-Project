@@ -59,6 +59,8 @@ module phase2speed_tb;
 		.ready(ready)
 	);
 
+	reg start;
+
 	initial begin
 		// Generate the clock signal:
 		forever #(CLOCK_PERIOD) clock = ~clock;
@@ -89,7 +91,6 @@ module phase2speed_tb;
 		start = 1;
 	end
 	
-	reg start;
 	reg [2:0] doit = 3'd4;
 	
 	always @(posedge clock) begin

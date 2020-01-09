@@ -33,10 +33,10 @@ module winddirection
 			   );
 
 
-assign speeden = wind_1_ready && wind_2_ready;
-
 wire wind_1_ready;
 wire wind_2_ready;
+
+assign speeden = wind_1_ready && wind_2_ready;
 
 wind wind_1 (
 	 .clock(clock),

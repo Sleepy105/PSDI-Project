@@ -1,0 +1,2 @@
+NET "clock" TNM_NET = "clock";
+TIMESPEC "TS_clock_2_MHz" = PERIOD "clock" 500 ns HIGH 50 %;
