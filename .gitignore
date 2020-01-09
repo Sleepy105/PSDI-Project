@@ -1,5 +1,6 @@
 simdata
 matlab
+*.zip
 
 # intermediate build files
 *.bgn
